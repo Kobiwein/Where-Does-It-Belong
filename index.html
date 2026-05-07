@@ -24,6 +24,7 @@
             user-select: none; -webkit-user-select: none;
         }
 
+        /* מסך פתיחה וסיום מעוצבים ונקיים */
         #overlay-screen {
             position: fixed; inset: 0; 
             background: rgba(240, 244, 248, 0.7);
@@ -119,15 +120,21 @@
             width: 85%; max-width: 600px; min-height: 120px; position: relative;
         }
 
+        /* הגדלת הסמלים שנמצאים למטה במאגר */
         .draggable-item {
-            width: 70px; height: 70px; background-color: var(--card-bg);
-            border-radius: 18px; display: flex; justify-content: center; align-items: center;
-            font-size: 2.5rem; cursor: grab; box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            width: 90px; 
+            height: 90px; 
+            background-color: var(--card-bg);
+            border-radius: 22px; 
+            display: flex; justify-content: center; align-items: center;
+            font-size: 3.5rem; 
+            cursor: grab; box-shadow: 0 6px 12px rgba(0,0,0,0.1);
             touch-action: none; z-index: 10;
         }
 
         .draggable-item.dragging { position: fixed; z-index: 1000; pointer-events: none; }
 
+        /* שמירה על הגודל המקורי שהגדרנו לחישוקים */
         .draggable-item.dropped {
             position: absolute;
             top: 50%;
@@ -152,7 +159,15 @@
 
         .draggable-item.returning { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 999; }
 
-        footer { margin-bottom: 10px; color: #777; font-size: 0.9rem; font-weight: bold; }
+        /* עיצוב ברור ויפה לקרדיט למטה */
+        footer { 
+            margin-bottom: 15px; 
+            color: #555; 
+            font-size: 1rem; 
+            font-weight: bold; 
+            text-align: center;
+            z-index: 10;
+        }
 
         canvas#fireworks { position: fixed; inset: 0; pointer-events: none; z-index: 3000; display: none; }
 
@@ -179,13 +194,12 @@
             header { flex-direction: column; padding: 10px 0; }
 
             .drop-zones-container {
-                gap: 10px; /* צמצום המרווחים */
+                gap: 10px; 
                 margin-top: 5px;
             }
 
             .drop-zone-wrapper { gap: 8px; }
 
-            /* הקטנת החישוקים שייכנסו למסך טלפון */
             .drop-zone {
                 width: 100px;
                 height: 100px;
@@ -207,14 +221,15 @@
                 margin-bottom: 15px;
             }
 
-            /* הקטנת הסמלים */
+            /* הגדלת הסמלים במאגר גם בטלפון סלולרי */
             .draggable-item {
-                width: 55px;
-                height: 55px;
-                font-size: 2rem;
-                border-radius: 14px;
+                width: 65px;
+                height: 65px;
+                font-size: 2.5rem;
+                border-radius: 16px;
             }
 
+            /* הגודל בתוך החישוק בנייד נשאר כשהיה */
             .draggable-item.dropped {
                 width: 55px;
                 height: 55px;
@@ -223,6 +238,7 @@
 
             #start-content h2 { font-size: 1.8rem; }
             .level-btn { font-size: 1.2rem; padding: 15px; }
+            footer { font-size: 0.85rem; margin-bottom: 10px; }
         }
     </style>
 </head>
@@ -235,7 +251,7 @@
             <button class="level-btn btn-advanced" onclick="initGame(12)">🌟 מתקדם (12 פריטים)</button>
         </div>
         <div id="victory-content" style="display: none;">
-            <h2 style="font-size: 3rem; color: #2ed573; margin-bottom: 5px;">כל הכבוד עמנואל! 🎉</h2>
+            <h2 style="font-size: 3rem; color: #2ed573; margin-bottom: 5px;">כל הכבוד! 🎉</h2>
             <p style="font-size: 1.4rem; margin-bottom: 15px; color: #555;">סיימת למיין את כל התמונות!</p>
             <button class="btn-again" onclick="showStartScreen()">משחק נוסף ↺</button>
         </div>
@@ -399,12 +415,10 @@
                     const countInZone = targetZone.querySelectorAll('.draggable-item').length;
                     let randX = 0, randY = 0;
                     
-                    // חישוב פיזור דינמי שמתחשב בגודל החישוק באותו רגע
                     const zoneSize = targetZone.offsetWidth;
                     
                     if (countInZone > 0) {
                         const angle = countInZone * 2.4 + (Math.random() * 0.4 - 0.2); 
-                        // גודל הפיזור יקטן אוטומטית אם המסך קטן והחישוק קטן
                         const maxDist = (zoneSize / 2) * 0.55; 
                         const dist = maxDist * 0.5 + Math.random() * maxDist; 
                         randX = Math.cos(angle) * dist;
