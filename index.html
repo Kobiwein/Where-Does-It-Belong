@@ -24,11 +24,10 @@
             user-select: none; -webkit-user-select: none;
         }
 
-        /* מסך פתיחה וסיום מעוצבים ונקיים */
         #overlay-screen {
             position: fixed; inset: 0; 
             background: rgba(240, 244, 248, 0.7);
-            backdrop-filter: blur(10px); /* אפקט טשטוש מודרני לרקע */
+            backdrop-filter: blur(10px); 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 2000; text-align: center;
         }
@@ -39,6 +38,7 @@
             border-radius: 30px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.1);
             display: flex; flex-direction: column; align-items: center; gap: 20px;
+            width: 80%; max-width: 400px;
         }
 
         #start-content h2 {
@@ -46,15 +46,20 @@
         }
 
         .level-btn {
-            padding: 18px 30px; font-size: 1.4rem; border: none; border-radius: 20px;
-            cursor: pointer; color: white; transition: all 0.3s ease; width: 300px;
+            padding: 18px 20px; font-size: 1.4rem; border: none; border-radius: 20px;
+            cursor: pointer; color: white; transition: all 0.3s ease; width: 100%;
             font-family: 'Varela Round', sans-serif; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
             display: flex; align-items: center; justify-content: center; gap: 10px;
         }
         
         .btn-beginner { background: linear-gradient(135deg, #2ed573, #2bad5f); }
         .btn-advanced { background: linear-gradient(135deg, #1e90ff, #1c7ed6); }
-        .btn-again { background: linear-gradient(135deg, #95a5a6, #7f8c8d); padding: 15px 30px; border-radius: 20px; color: white; border: none; font-size: 1.4rem; cursor: pointer; font-family: 'Varela Round', sans-serif; margin-top: 10px;}
+        .btn-again { 
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d); 
+            padding: 15px 30px; border-radius: 20px; color: white; border: none; 
+            font-size: 1.4rem; cursor: pointer; font-family: 'Varela Round', sans-serif; 
+            margin-top: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); transition: all 0.3s ease;
+        }
         
         .level-btn:hover, .btn-again:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.2); }
         .level-btn:active, .btn-again:active { transform: scale(0.95); }
@@ -96,7 +101,7 @@
         .drop-zone-label {
             font-size: 1.2rem; font-weight: bold; color: white;
             padding: 8px 20px; border-radius: 8px; width: 140px; text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); box-sizing: border-box;
         }
         .wrapper-animal .drop-zone-label { background-color: var(--animal-color); }
         .wrapper-vehicle .drop-zone-label { background-color: var(--vehicle-color); }
@@ -109,9 +114,9 @@
 
         .items-pool {
             display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;
-            margin-top: auto; margin-bottom: 30px; padding: 20px;
+            margin-top: auto; margin-bottom: 20px; padding: 20px;
             background: rgba(255, 255, 255, 0.6); border-radius: 30px;
-            width: 85%; max-width: 600px; min-height: 140px; position: relative;
+            width: 85%; max-width: 600px; min-height: 120px; position: relative;
         }
 
         .draggable-item {
@@ -160,49 +165,65 @@
         }
         .shake { animation: shake 0.4s; }
 
-/* ---- התאמות למסכים קטנים (טלפונים סלולריים) ---- */
-@media (max-width: 768px) {
-    /* צמצום הרווח בין החישוקים כדי שיכנסו למסך אחד */
-    .drop-zones-container {
-        gap: 10px; 
-    }
+        /* =========================================
+           התאמה רספונסיבית (מסכים קטנים וטלפונים)
+           ========================================= */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.4rem; }
+            
+            .reset-btn {
+                position: relative; left: 0; top: 0;
+                margin-bottom: 10px;
+            }
+            
+            header { flex-direction: column; padding: 10px 0; }
 
-    /* הקטנת החישוקים עצמם */
-    .drop-zone {
-        width: 110px;
-        height: 110px;
-        border-width: 3px;
-    }
+            .drop-zones-container {
+                gap: 10px; /* צמצום המרווחים */
+                margin-top: 5px;
+            }
 
-    /* הקטנת אימוג'י הרקע (סימן המים) בתוך החישוק */
-    .watermark {
-        font-size: 3rem;
-    }
+            .drop-zone-wrapper { gap: 8px; }
 
-    /* הקטנת הכיתובים מתחת לחישוקים ("חיות", "אוכל") */
-    .drop-zone-label {
-        font-size: 1rem;
-        padding: 5px 10px;
-        width: 90px;
-    }
+            /* הקטנת החישוקים שייכנסו למסך טלפון */
+            .drop-zone {
+                width: 100px;
+                height: 100px;
+                border-width: 3px;
+            }
 
-    /* הקטנת הסמלים שהילד גורר */
-    .draggable-item {
-        width: 55px;
-        height: 55px;
-        font-size: 2rem;
-    }
+            .watermark { font-size: 2.8rem; }
 
-    /* הקטנת הגודל של הסמל אחרי שהוא נכנס לחישוק (שלא יחרוג) */
-    .draggable-item.dropped {
-        width: 65px;
-        height: 65px;
-        font-size: 2.5rem;
-    }
-}
+            .drop-zone-label {
+                font-size: 1rem;
+                padding: 5px 10px;
+                width: 100px;
+            }
 
+            .items-pool {
+                width: 95%;
+                gap: 10px;
+                padding: 15px;
+                margin-bottom: 15px;
+            }
 
-        
+            /* הקטנת הסמלים */
+            .draggable-item {
+                width: 55px;
+                height: 55px;
+                font-size: 2rem;
+                border-radius: 14px;
+            }
+
+            .draggable-item.dropped {
+                width: 55px;
+                height: 55px;
+                font-size: 2.2rem;
+            }
+
+            #start-content h2 { font-size: 1.8rem; }
+            .level-btn { font-size: 1.2rem; padding: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -214,7 +235,7 @@
             <button class="level-btn btn-advanced" onclick="initGame(12)">🌟 מתקדם (12 פריטים)</button>
         </div>
         <div id="victory-content" style="display: none;">
-            <h2 style="font-size: 3rem; color: #2ed573; margin-bottom: 5px;">כל הכבוד! 🎉</h2>
+            <h2 style="font-size: 3rem; color: #2ed573; margin-bottom: 5px;">כל הכבוד עמנואל! 🎉</h2>
             <p style="font-size: 1.4rem; margin-bottom: 15px; color: #555;">סיימת למיין את כל התמונות!</p>
             <button class="btn-again" onclick="showStartScreen()">משחק נוסף ↺</button>
         </div>
@@ -242,7 +263,7 @@
 
     <div class="items-pool" id="items-pool"></div>
 
-    <footer>כל הזכויות שמורות לאליה וינשטיין קלינאית תקשורת©</footer>
+    <footer>כל הזכויות שמורות לאליה וינשטיין קלינאית תקשורת</footer>
     <canvas id="fireworks"></canvas>
 
     <script>
@@ -375,15 +396,17 @@
                 if (targetZone && targetZone.dataset.category === element.dataset.category) {
                     playSound('success');
                     
-                    // חישוב מרווח רחב יותר כדי למנוע הסתרה
                     const countInZone = targetZone.querySelectorAll('.draggable-item').length;
                     let randX = 0, randY = 0;
                     
+                    // חישוב פיזור דינמי שמתחשב בגודל החישוק באותו רגע
+                    const zoneSize = targetZone.offsetWidth;
+                    
                     if (countInZone > 0) {
-                        // זווית הזהב לפיזור טבעי שאינו חופף
                         const angle = countInZone * 2.4 + (Math.random() * 0.4 - 0.2); 
-                        // מרחק גדול יותר מהמרכז לעומת קודם
-                        const dist = 32 + Math.random() * 18; 
+                        // גודל הפיזור יקטן אוטומטית אם המסך קטן והחישוק קטן
+                        const maxDist = (zoneSize / 2) * 0.55; 
+                        const dist = maxDist * 0.5 + Math.random() * maxDist; 
                         randX = Math.cos(angle) * dist;
                         randY = Math.sin(angle) * dist;
                     }
