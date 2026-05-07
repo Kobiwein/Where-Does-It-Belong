@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>משחק מיון לילדים - אליה וינשטיין</title>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --animal-color: #ffd166;
+            --vehicle-color: #118ab2;
+            --food-color: #06d6a0;
+            --card-bg: #ffffff;
+            --neutral-btn: #6c757d;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Varela Round', sans-serif;
+            background-color: var(--bg-color);
+            display: flex; flex-direction: column; align-items: center;
+            height: 100vh; overflow: hidden; touch-action: none;
+            user-select: none; -webkit-user-select: none;
+        }
+
+        /* מסך פתיחה וסיום מעוצבים ונקיים */
+        #overlay-screen {
+            position: fixed; inset: 0; 
+            background: rgba(240, 244, 248, 0.7);
+            backdrop-filter: blur(10px); /* אפקט טשטוש מודרני לרקע */
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 2000; text-align: center;
+        }
+
+        #start-content, #victory-content {
+            background: white;
+            padding: 40px 50px;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+        }
+
+        #start-content h2 {
+            color: #2c3e50; font-size: 2.2rem; margin: 0 0 10px 0;
+        }
+
+        .level-btn {
+            padding: 18px 30px; font-size: 1.4rem; border: none; border-radius: 20px;
+            cursor: pointer; color: white; transition: all 0.3s ease; width: 300px;
+            font-family: 'Varela Round', sans-serif; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        
+        .btn-beginner { background: linear-gradient(135deg, #2ed573, #2bad5f); }
+        .btn-advanced { background: linear-gradient(135deg, #1e90ff, #1c7ed6); }
+        .btn-again { background: linear-gradient(135deg, #95a5a6, #7f8c8d); padding: 15px 30px; border-radius: 20px; color: white; border: none; font-size: 1.4rem; cursor: pointer; font-family: 'Varela Round', sans-serif; margin-top: 10px;}
+        
+        .level-btn:hover, .btn-again:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.2); }
+        .level-btn:active, .btn-again:active { transform: scale(0.95); }
+
+        header {
+            width: 100%; display: flex; justify-content: center; align-items: center;
+            padding: 15px 0; position: relative;
+        }
+
+        h1 { font-size: 1.8rem; margin: 0; color: #333; }
+
+        .reset-btn {
+            position: absolute; left: 20px; top: 15px;
+            background-color: var(--neutral-btn); color: white;
+            border: none; padding: 8px 15px; font-size: 0.9rem;
+            border-radius: 10px; cursor: pointer; opacity: 0.8;
+            font-family: 'Varela Round', sans-serif; transition: opacity 0.2s;
+        }
+        .reset-btn:hover { opacity: 1; }
+
+        .drop-zones-container {
+            display: flex; justify-content: center; gap: 30px; margin-top: 15px; width: 100%;
+        }
+
+        .drop-zone-wrapper { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+
+        .drop-zone {
+            width: 170px; height: 170px; border-radius: 50%;
+            background-color: var(--card-bg); border: 5px dashed #ccc;
+            position: relative; box-sizing: border-box;
+            transition: border-color 0.3s;
+            overflow: hidden; 
+        }
+
+        .drop-zone[data-category="animal"] { border-color: var(--animal-color); }
+        .drop-zone[data-category="vehicle"] { border-color: var(--vehicle-color); }
+        .drop-zone[data-category="food"] { border-color: var(--food-color); }
+
+        .drop-zone-label {
+            font-size: 1.2rem; font-weight: bold; color: white;
+            padding: 8px 20px; border-radius: 8px; width: 140px; text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .wrapper-animal .drop-zone-label { background-color: var(--animal-color); }
+        .wrapper-vehicle .drop-zone-label { background-color: var(--vehicle-color); }
+        .wrapper-food .drop-zone-label { background-color: var(--food-color); }
+
+        .watermark { 
+            font-size: 4.5rem; opacity: 0.12; position: absolute; pointer-events: none;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+        }
+
+        .items-pool {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;
+            margin-top: auto; margin-bottom: 30px; padding: 20px;
+            background: rgba(255, 255, 255, 0.6); border-radius: 30px;
+            width: 85%; max-width: 600px; min-height: 140px; position: relative;
+        }
+
+        .draggable-item {
+            width: 70px; height: 70px; background-color: var(--card-bg);
+            border-radius: 18px; display: flex; justify-content: center; align-items: center;
+            font-size: 2.5rem; cursor: grab; box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            touch-action: none; z-index: 10;
+        }
+
+        .draggable-item.dragging { position: fixed; z-index: 1000; pointer-events: none; }
+
+        .draggable-item.dropped {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            --offsetX: 0px;
+            --offsetY: 0px;
+            --rot: 0deg;
+            width: 85px; 
+            height: 85px; 
+            font-size: 3.2rem; 
+            box-shadow: none;
+            background: transparent;
+            cursor: default;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.2); 
+            animation: popAndScatter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popAndScatter {
+            0% { transform: translate(-50%, -50%) scale(0.5) rotate(0deg); opacity: 0; }
+            100% { transform: translate(calc(-50% + var(--offsetX)), calc(-50% + var(--offsetY))) scale(1) rotate(var(--rot)); opacity: 1; }
+        }
+
+        .draggable-item.returning { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 999; }
+
+        footer { margin-bottom: 10px; color: #777; font-size: 0.9rem; font-weight: bold; }
+
+        canvas#fireworks { position: fixed; inset: 0; pointer-events: none; z-index: 3000; display: none; }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            50% { transform: translateX(8px); }
+            75% { transform: translateX(-8px); }
+            100% { transform: translateX(0); }
+        }
+        .shake { animation: shake 0.4s; }
+    </style>
+</head>
+<body>
+
+    <div id="overlay-screen">
+        <div id="start-content">
+            <h2>בחר רמת קושי</h2>
+            <button class="level-btn btn-beginner" onclick="initGame(9)">⭐ מתחיל (9 פריטים)</button>
+            <button class="level-btn btn-advanced" onclick="initGame(12)">🌟 מתקדם (12 פריטים)</button>
+        </div>
+        <div id="victory-content" style="display: none;">
+            <h2 style="font-size: 3rem; color: #2ed573; margin-bottom: 5px;">כל הכבוד! 🎉</h2>
+            <p style="font-size: 1.4rem; margin-bottom: 15px; color: #555;">סיימת למיין את כל התמונות!</p>
+            <button class="btn-again" onclick="showStartScreen()">משחק נוסף ↺</button>
+        </div>
+    </div>
+
+    <header>
+        <button class="reset-btn" onclick="showStartScreen()">משחק חדש ↺</button>
+        <h1>לאן זה שייך?</h1>
+    </header>
+
+    <div class="drop-zones-container">
+        <div class="drop-zone-wrapper wrapper-animal">
+            <div class="drop-zone" data-category="animal"><div class="watermark">🐶</div></div>
+            <div class="drop-zone-label">חיות</div>
+        </div>
+        <div class="drop-zone-wrapper wrapper-vehicle">
+            <div class="drop-zone" data-category="vehicle"><div class="watermark">🚗</div></div>
+            <div class="drop-zone-label">כלי תחבורה</div>
+        </div>
+        <div class="drop-zone-wrapper wrapper-food">
+            <div class="drop-zone" data-category="food"><div class="watermark">🍎</div></div>
+            <div class="drop-zone-label">אוכל</div>
+        </div>
+    </div>
+
+    <div class="items-pool" id="items-pool"></div>
+
+    <footer>כל הזכויות שמורות לאליה וינשטיין קלינאית תקשורת©</footer>
+    <canvas id="fireworks"></canvas>
+
+    <script>
+        const library = {
+            animal: ['🐱','🐶','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🐴','🦄','🐝','🦋','🐞','🐢','🐍','🐙','🐘','🦒','🐫'],
+            vehicle: ['🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🚚','🚛','🚜','🚲','🛵','🏍️','🚆','🚇','✈️','🚁','🚀','⛵','🛳️','🚤'],
+            food: ['🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🥑','🥦','🌽','🥕','🥖','🧀','🍳','🍗','🥩','🍔','🍟','🍕','🌮','🍰','🍦','🍩','🍪']
+        };
+
+        let activeItems = [];
+        let totalToSolve = 0;
+        let solvedCount = 0;
+        const itemsPool = document.getElementById('items-pool');
+        let audioCtx;
+        let fireworksActive = false;
+
+        function showStartScreen() {
+            fireworksActive = false;
+            document.getElementById('fireworks').style.display = 'none';
+            document.getElementById('overlay-screen').style.display = 'flex';
+            document.getElementById('start-content').style.display = 'flex';
+            document.getElementById('victory-content').style.display = 'none';
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.querySelectorAll('.draggable-item').forEach(el => el.remove());
+            });
+        }
+
+        function initGame(count) {
+            totalToSolve = count;
+            solvedCount = 0;
+            document.getElementById('overlay-screen').style.display = 'none';
+            const categories = ['animal', 'vehicle', 'food'];
+            activeItems = [];
+            categories.forEach(cat => {
+                let shuffledCat = [...library[cat]].sort(() => 0.5 - Math.random());
+                for(let i=0; i < count/3; i++) {
+                    activeItems.push({ emoji: shuffledCat[i], category: cat });
+                }
+            });
+            activeItems.sort(() => 0.5 - Math.random());
+            renderPool();
+        }
+
+        function renderPool() {
+            itemsPool.innerHTML = '';
+            activeItems.forEach(data => {
+                const el = document.createElement('div');
+                el.classList.add('draggable-item');
+                el.dataset.category = data.category;
+                el.textContent = data.emoji;
+                itemsPool.appendChild(el);
+                makeDraggable(el);
+            });
+        }
+
+        function playSound(type) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                if (type === 'success') {
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                } else {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                }
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            } catch (e) {}
+        }
+
+        function makeDraggable(element) {
+            let startX, startY, originalRect, isDragging = false, placeholder = null;
+
+            const onStart = (e) => {
+                if (element.classList.contains('dropped') || isDragging) return;
+                isDragging = true;
+                const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+                originalRect = element.getBoundingClientRect();
+                placeholder = element.cloneNode(true);
+                placeholder.style.visibility = 'hidden';
+                element.parentNode.insertBefore(placeholder, element);
+                startX = clientX - originalRect.left;
+                startY = clientY - originalRect.top;
+                element.classList.add('dragging');
+                element.style.width = originalRect.width + 'px';
+                element.style.height = originalRect.height + 'px';
+                element.style.left = originalRect.left + 'px';
+                element.style.top = originalRect.top + 'px';
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('touchmove', onMove, { passive: false });
+                document.addEventListener('mouseup', onEnd);
+                document.addEventListener('touchend', onEnd);
+            };
+
+            const onMove = (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+                element.style.left = (clientX - startX) + 'px';
+                element.style.top = (clientY - startY) + 'px';
+            };
+
+            const onEnd = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('touchmove', onMove);
+                document.removeEventListener('mouseup', onEnd);
+                document.removeEventListener('touchend', onEnd);
+
+                const rect = element.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+
+                let targetZone = null;
+                document.querySelectorAll('.drop-zone').forEach(zone => {
+                    const zRect = zone.getBoundingClientRect();
+                    if (centerX > zRect.left && centerX < zRect.right && centerY > zRect.top && centerY < zRect.bottom) {
+                        targetZone = zone;
+                    }
+                });
+
+                if (targetZone && targetZone.dataset.category === element.dataset.category) {
+                    playSound('success');
+                    
+                    // חישוב מרווח רחב יותר כדי למנוע הסתרה
+                    const countInZone = targetZone.querySelectorAll('.draggable-item').length;
+                    let randX = 0, randY = 0;
+                    
+                    if (countInZone > 0) {
+                        // זווית הזהב לפיזור טבעי שאינו חופף
+                        const angle = countInZone * 2.4 + (Math.random() * 0.4 - 0.2); 
+                        // מרחק גדול יותר מהמרכז לעומת קודם
+                        const dist = 32 + Math.random() * 18; 
+                        randX = Math.cos(angle) * dist;
+                        randY = Math.sin(angle) * dist;
+                    }
+
+                    const randRot = (Math.random() * 40 - 20) + 'deg'; 
+                    
+                    element.style.setProperty('--offsetX', randX + 'px');
+                    element.style.setProperty('--offsetY', randY + 'px');
+                    element.style.setProperty('--rot', randRot);
+
+                    element.classList.remove('dragging');
+                    element.classList.add('dropped');
+                    element.style.left = ''; element.style.top = '';
+                    element.style.width = ''; element.style.height = '';
+                    targetZone.appendChild(element);
+                    placeholder.remove();
+                    solvedCount++;
+                    if(solvedCount === totalToSolve) showVictory();
+                } else {
+                    playSound('error');
+                    element.classList.add('returning', 'shake');
+                    element.style.left = originalRect.left + 'px';
+                    element.style.top = originalRect.top + 'px';
+                    setTimeout(() => {
+                        element.classList.remove('dragging', 'returning', 'shake');
+                        element.style.position = ''; element.style.left = ''; element.style.top = '';
+                        placeholder.parentNode.replaceChild(element, placeholder);
+                    }, 400);
+                }
+            };
+            element.addEventListener('mousedown', onStart);
+            element.addEventListener('touchstart', onStart, { passive: false });
+        }
+
+        function showVictory() {
+            startFireworks();
+            setTimeout(() => {
+                document.getElementById('overlay-screen').style.display = 'flex';
+                document.getElementById('start-content').style.display = 'none';
+                document.getElementById('victory-content').style.display = 'flex';
+            }, 800);
+        }
+
+        function startFireworks() {
+            fireworksActive = true;
+            const canvas = document.getElementById('fireworks');
+            canvas.style.display = 'block';
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let particles = [];
+            function createParticle(x, y) {
+                const colors = ['#ff4757', '#2ed573', '#1e90ff', '#ffa502', '#ffffff'];
+                for(let i=0; i<35; i++) {
+                    particles.push({
+                        x, y,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        v: { x: (Math.random()-0.5)*14, y: (Math.random()-0.5)*14 },
+                        alpha: 1
+                    });
+                }
+            }
+            let timer = 0;
+            function animate() {
+                if(!fireworksActive) return;
+                ctx.clearRect(0,0, canvas.width, canvas.height);
+                if(timer % 12 === 0) createParticle(Math.random()*canvas.width, Math.random()*canvas.height);
+                particles.forEach((p, i) => {
+                    p.x += p.v.x; p.y += p.v.y; p.alpha -= 0.01;
+                    ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+                    if(p.alpha <= 0) particles.splice(i, 1);
+                });
+                timer++; requestAnimationFrame(animate);
+            }
+            animate();
+        }
+    </script>
+</body>
+</html>
